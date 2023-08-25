@@ -1,0 +1,4 @@
+*.env
+final/
+.DS*
+*.json
