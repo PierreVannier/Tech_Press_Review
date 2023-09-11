@@ -50,6 +50,28 @@ def get_article_summary(article: NewsPlease) -> str:
     return response["choices"][0]["message"]["content"]
 
 
+def get_podcast_teaser(articles_json_file:str):
+    with open(articles_json_file) as articles:
+        articles_json = articles.read()
+    messages = [{"role": "system", "content": "You are a helpful assistant that summarize technology articles."}, 
+                {"role": "user", "content": """
+                 Here's a json file representing articles which will be transformed in a mini podcast.
+                 
+                 I want you to create a short summary of the whole podcast as bullet point paragraphs explaining briefly what the articles are about.
+                 This should act as a teaser, podcast notes and should make the reader want to listen to the podcast.
+                 It should be engaging.
+                 Here's the json file """ + articles_json}, 
+            ]
+    response = openai.ChatCompletion.create(model="gpt-4", messages=messages)
+    return response["choices"][0]["message"]["content"]
+
+def save_podcast_teaser(podcast_teaser:str):
+    with open("./final/podcast_teaser.txt", "w") as f:
+        f.write(podcast_teaser)
+
+def create_podcast_teaser():
+    podcast_teaser = get_podcast_teaser("./articles.json")
+    save_podcast_teaser(podcast_teaser)
 
 def save_articles_to_json_file(articles:List[NewsPlease]) -> None:
     with open("./articles.json", "w") as f:
@@ -65,7 +87,7 @@ def join_podcasts() -> None:
         podcast = AudioSegment.from_file(pod)
         combined_wav += silence + podcast
     byte_array = generate(
-        text = "This podcast is brought to you by Flint. s h, Tech consulting company, made with the help of OpenAI and Elevenlabs.",
+        text = "This podcast is brought to you by Flint dot s h, Tech consulting company, made with the help of OpenAI and Elevenlabs.",
         model="eleven_monolingual_v1",
         voice = "oWAxZDx7w5VEj9dCyTzz"
     )
@@ -116,6 +138,7 @@ if __name__ == '__main__':
       '--url': main,
       '--create_podcasts': create_podcast,
       '--join_podcasts': join_podcasts,
+      '--get_podcast_detail' : create_podcast_teaser
   })
 
     
